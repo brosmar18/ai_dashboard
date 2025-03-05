@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useRef, useEffect } from 'react';
 import { useChatContext } from '../context/ChatContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,22 +6,32 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function ChatInput() {
   const [messageText, setMessageText] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const { sendMessage, currentChat } = useChatContext();
+  const { currentChat, sendMessage } = useChatContext();
   
-  // Focus the input when the component mounts or chat changes
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
   }, [currentChat]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (messageText.trim()) {
-      sendMessage(messageText);
+    if (!messageText.trim() || !currentChat || isLoading) return;
+    
+    setIsLoading(true);
+    
+    try {
+      await sendMessage(messageText);
+      
       setMessageText('');
       setIsExpanded(false);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      alert('Failed to send message. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -33,7 +42,6 @@ export default function ChatInput() {
     }
   };
 
-  // Input animation variants
   const inputVariants = {
     normal: { 
       height: '50px',
@@ -45,7 +53,6 @@ export default function ChatInput() {
     }
   };
 
-  // Button animation variants
   const buttonVariants = {
     idle: { scale: 1 },
     hover: { 
@@ -80,12 +87,13 @@ export default function ChatInput() {
               onKeyDown={handleKeyDown}
               onFocus={() => setIsExpanded(true)}
               placeholder="Type your message..."
-              className="w-full border border-slate-300 dark:border-slate-600 rounded-xl pl-4 pr-10 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-colors duration-200 resize-none"
+              disabled={isLoading}
+              className="w-full border border-slate-300 dark:border-slate-600 rounded-xl pl-4 pr-10 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-colors duration-200 resize-none disabled:opacity-70"
               style={{ height: isExpanded ? '100px' : '50px' }}
             />
             
             <AnimatePresence>
-              {messageText.trim().length > 0 && (
+              {messageText.trim().length > 0 && !isLoading && (
                 <motion.button
                   type="button"
                   onClick={() => setMessageText('')}
@@ -107,15 +115,19 @@ export default function ChatInput() {
           <motion.button
             type="submit"
             className="bg-emerald-600 dark:bg-emerald-500 text-white p-3 rounded-xl hover:bg-emerald-700 dark:hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-600"
-            disabled={!messageText.trim()}
+            disabled={!messageText.trim() || isLoading}
             variants={buttonVariants}
             initial="idle"
             whileHover="hover"
             whileTap="tap"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
+            {isLoading ? (
+              <div className="w-5 h-5 border-t-2 border-r-2 border-white rounded-full animate-spin" />
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            )}
           </motion.button>
         </motion.div>
         

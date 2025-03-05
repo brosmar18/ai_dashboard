@@ -1,8 +1,6 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { formatDistanceToNow } from 'date-fns';
 
-// Redesigned interfaces for AI-focused chat
 export interface ChatMessage {
   id: string;
   text: string;
@@ -15,6 +13,7 @@ export interface Chat {
   name: string;
   messages: ChatMessage[];
   lastActivity: Date;
+  threadId?: string;
 }
 
 export interface AIChannel {
@@ -34,8 +33,8 @@ interface ChatContextType {
   isTyping: boolean;
   setCurrentChannel: (channelId: string) => void;
   setCurrentChat: (chatId: string | null) => void;
-  sendMessage: (text: string) => void;
-  createNewChat: () => void;
+  sendMessage: (text: string) => Promise<void>;
+  createNewChat: () => Promise<void>;
   deleteChat: (chatId: string) => void;
   darkMode: boolean;
   toggleDarkMode: () => void;
@@ -47,7 +46,6 @@ interface ChatContextType {
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
-// Sample initial chat data
 const createSampleChat = (id: string, name: string): Chat => ({
   id,
   name,
@@ -62,7 +60,6 @@ const createSampleChat = (id: string, name: string): Chat => ({
   ]
 });
 
-// Initial AI channels
 const initialChannels: AIChannel[] = [
   {
     id: 'channel-userguide',
@@ -111,60 +108,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isChatListOpen, setIsChatListOpen] = useState(true);
 
-  // Simulate AI typing response
-  useEffect(() => {
-    let typingTimeout: NodeJS.Timeout;
-    
-    if (currentChat && currentChat.messages.length > 0 && currentChat.messages[currentChat.messages.length - 1].isUser) {
-      // Start typing effect after user message
-      setIsTyping(true);
-      
-      typingTimeout = setTimeout(() => {
-        // Generate AI response after typing
-        const newMessage: ChatMessage = {
-          id: `msg-${Date.now()}`,
-          text: generateAIResponse(currentChannel.name, currentChat.messages[currentChat.messages.length - 1].text),
-          isUser: false,
-          timestamp: new Date()
-        };
-        
-        setIsTyping(false);
-        updateChatWithNewMessage(currentChat.id, newMessage);
-      }, 2000);
-    }
-    
-    return () => clearTimeout(typingTimeout);
-  }, [currentChat?.messages]);
-
-  // Generate simple responses based on channel type
-  const generateAIResponse = (channelName: string, userMessage: string): string => {
-    const userMsgLower = userMessage.toLowerCase();
-    
-    if (channelName.includes('User Guide')) {
-      if (userMsgLower.includes('help') || userMsgLower.includes('guide')) {
-        return "I can help you navigate our product. What specific feature are you looking for guidance on?";
-      }
-      return "As your User Guide Assistant, I'm here to provide documentation and help you understand product features. What would you like to know?";
-    }
-    
-    if (channelName.includes('Report')) {
-      if (userMsgLower.includes('report') || userMsgLower.includes('data')) {
-        return "I can help generate various reports. Would you like a sales report, customer analysis, or something else?";
-      }
-      return "I'm your Report Builder Assistant. I can help you create insightful data visualizations and reports. What type of data are you working with?";
-    }
-    
-    if (channelName.includes('SQL')) {
-      if (userMsgLower.includes('query') || userMsgLower.includes('sql')) {
-        return "For SQL optimization, I'd need to see your current query. Can you share the SQL code you're working with?";
-      }
-      return "As your SQL Assistant, I can help optimize queries, design schemas, and troubleshoot database issues. What's your database question?";
-    }
-    
-    return "I'm here to help! Could you provide more details about what you need?";
-  };
-
-  // Function to change channels
   const changeCurrentChannel = (channelId: string) => {
     const updatedChannels = channels.map(channel => ({
       ...channel,
@@ -178,7 +121,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsMobileSidebarOpen(false);
   };
 
-  // Function to change chats within a channel
   const changeCurrentChat = (chatId: string | null) => {
     if (!chatId) {
       setCurrentChat(null);
@@ -189,51 +131,53 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (chat) {
       setCurrentChat(chat);
       if (window.innerWidth < 768) {
-        setIsChatListOpen(false); // Close chat list on mobile when selecting a chat
+        setIsChatListOpen(false);
       }
     }
   };
 
-  // Send a new message
-  const sendMessage = (text: string) => {
-    if (!text.trim() || !currentChat) return;
+  const createNewChat = async () => {
+    try {
+      const response = await fetch('/api/threads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
 
-    const newMessage: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      text,
-      isUser: true,
-      timestamp: new Date()
-    };
+      const data = await response.json();
 
-    updateChatWithNewMessage(currentChat.id, newMessage);
-  };
-
-  // Create a new chat in the current channel
-  const createNewChat = () => {
-    const newChatName = `New Chat ${currentChannel.chats.length + 1}`;
-    const newChat: Chat = {
-      id: `chat-${currentChannel.id}-${Date.now()}`,
-      name: newChatName,
-      messages: [],
-      lastActivity: new Date()
-    };
-
-    const updatedChannels = channels.map(channel => {
-      if (channel.id === currentChannel.id) {
-        return {
-          ...channel,
-          chats: [newChat, ...channel.chats]
-        };
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create thread');
       }
-      return channel;
-    });
 
-    setChannels(updatedChannels);
-    setCurrentChannel(updatedChannels.find(c => c.id === currentChannel.id) || updatedChannels[0]);
-    setCurrentChat(newChat);
+      const newChat: Chat = {
+        id: `chat-${currentChannel.id}-${Date.now()}`,
+        name: `New Chat ${currentChannel.chats.length + 1}`,
+        messages: [],
+        lastActivity: new Date(),
+        threadId: data.threadId
+      };
+
+      const updatedChannels = channels.map(channel => {
+        if (channel.id === currentChannel.id) {
+          return {
+            ...channel,
+            chats: [newChat, ...channel.chats]
+          };
+        }
+        return channel;
+      });
+
+      setChannels(updatedChannels);
+      setCurrentChannel(updatedChannels.find(c => c.id === currentChannel.id) || updatedChannels[0]);
+      setCurrentChat(newChat);
+    } catch (error) {
+      console.error('Error creating new chat:', error);
+      alert('Failed to create a new chat. Please try again.');
+    }
   };
 
-  // Delete a chat from current channel
   const deleteChat = (chatId: string) => {
     const updatedChannels = channels.map(channel => {
       if (channel.id === currentChannel.id) {
@@ -249,13 +193,56 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updatedCurrentChannel = updatedChannels.find(c => c.id === currentChannel.id) || updatedChannels[0];
     setCurrentChannel(updatedCurrentChannel);
     
-    // If deleted current chat, select the first available chat
     if (currentChat && currentChat.id === chatId) {
       setCurrentChat(updatedCurrentChannel.chats[0] || null);
     }
   };
 
-  // Helper to update a chat with a new message
+  const sendMessage = async (text: string) => {
+    if (!text.trim() || !currentChat || !currentChat.threadId) return;
+
+    const newMessage: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      text,
+      isUser: true,
+      timestamp: new Date()
+    };
+
+    updateChatWithNewMessage(currentChat.id, newMessage);
+
+    try {
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          threadId: currentChat.threadId,
+          message: text
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message');
+      }
+
+      if (data.message) {
+        const assistantMessage: ChatMessage = {
+          id: `msg-${Date.now()}`,
+          text: data.message,
+          isUser: false,
+          timestamp: new Date()
+        };
+        updateChatWithNewMessage(currentChat.id, assistantMessage);
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      alert('Failed to send message. Please try again.');
+    }
+  };
+
   const updateChatWithNewMessage = (chatId: string, message: ChatMessage) => {
     const updatedChannels = channels.map(channel => {
       if (channel.id === currentChannel.id) {
@@ -285,7 +272,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   };
 
-  // Toggle dark mode
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
     if (typeof window !== 'undefined') {
@@ -293,17 +279,14 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Toggle mobile sidebar
   const toggleMobileSidebar = () => {
     setIsMobileSidebarOpen(!isMobileSidebarOpen);
   };
 
-  // Toggle chat list (for mobile/tablet view)
   const toggleChatList = () => {
     setIsChatListOpen(!isChatListOpen);
   };
 
-  // Initialize dark mode from localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedDarkMode = localStorage.getItem('darkMode');
