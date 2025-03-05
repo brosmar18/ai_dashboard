@@ -60,49 +60,44 @@ const createSampleChat = (id: string, name: string): Chat => ({
   ]
 });
 
+const createInitialChannel = (id: string, name: string, description: string, iconEmoji: string, color: string): AIChannel => ({
+  id,
+  name,
+  description,
+  iconEmoji,
+  color,
+  isActive: id === 'channel-userguide', // First channel active by default
+  chats: [] // Start with empty chats
+});
+
 const initialChannels: AIChannel[] = [
-  {
-    id: 'channel-userguide',
-    name: 'User Guide Assistant',
-    description: 'Get help with product documentation and guidance',
-    iconEmoji: '📚',
-    color: 'emerald',
-    isActive: true,
-    chats: [
-      createSampleChat('chat-userguide-1', 'Guide Help'),
-      createSampleChat('chat-userguide-2', 'Product Questions')
-    ]
-  },
-  {
-    id: 'channel-report',
-    name: 'Report Builder',
-    description: 'Generate data reports and visualizations',
-    iconEmoji: '📊',
-    color: 'blue',
-    isActive: false,
-    chats: [
-      createSampleChat('chat-report-1', 'Monthly Report'),
-      createSampleChat('chat-report-2', 'Sales Analytics')
-    ]
-  },
-  {
-    id: 'channel-sql',
-    name: 'SQL Assistant',
-    description: 'Get help with SQL queries and database issues',
-    iconEmoji: '💾',
-    color: 'purple',
-    isActive: false,
-    chats: [
-      createSampleChat('chat-sql-1', 'Query Optimization'),
-      createSampleChat('chat-sql-2', 'Database Schema')
-    ]
-  }
+  createInitialChannel(
+    'channel-userguide',
+    'User Guide Assistant',
+    'Get help with product documentation and guidance',
+    '📚',
+    'emerald'
+  ),
+  createInitialChannel(
+    'channel-report',
+    'Report Builder',
+    'Generate data reports and visualizations',
+    '📊',
+    'blue'
+  ),
+  createInitialChannel(
+    'channel-sql',
+    'SQL Assistant',
+    'Get help with SQL queries and database issues',
+    '💾',
+    'purple'
+  )
 ];
 
 export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [channels, setChannels] = useState<AIChannel[]>(initialChannels);
   const [currentChannel, setCurrentChannel] = useState<AIChannel>(initialChannels[0]);
-  const [currentChat, setCurrentChat] = useState<Chat | null>(initialChannels[0].chats[0]);
+  const [currentChat, setCurrentChat] = useState<Chat | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -126,7 +121,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCurrentChat(null);
       return;
     }
-    
+
     const chat = currentChannel.chats.find(c => c.id === chatId);
     if (chat) {
       setCurrentChat(chat);
@@ -192,7 +187,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setChannels(updatedChannels);
     const updatedCurrentChannel = updatedChannels.find(c => c.id === currentChannel.id) || updatedChannels[0];
     setCurrentChannel(updatedCurrentChannel);
-    
+
     if (currentChat && currentChat.id === chatId) {
       setCurrentChat(updatedCurrentChannel.chats[0] || null);
     }

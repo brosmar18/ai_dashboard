@@ -18,7 +18,14 @@ const MoonIcon = () => (
 );
 
 export default function Sidebar() {
-  const { channels, currentChannel, setCurrentChannel, darkMode, toggleDarkMode } = useChatContext();
+  const {
+    channels,
+    currentChannel,
+    setCurrentChannel,
+    darkMode,
+    toggleDarkMode,
+    createNewChat
+  } = useChatContext();
 
   // Helper function to handle color classes with proper types
   const getChannelClasses = (channel: AIChannel, isActive: boolean) => {
@@ -57,10 +64,10 @@ export default function Sidebar() {
   // Animation for channel items
   const itemVariants = {
     hidden: { opacity: 0, x: -20 },
-    visible: (i: number) => ({ 
-      opacity: 1, 
+    visible: (i: number) => ({
+      opacity: 1,
       x: 0,
-      transition: { 
+      transition: {
         delay: i * 0.1,
         duration: 0.5,
         type: "spring",
@@ -68,7 +75,7 @@ export default function Sidebar() {
         damping: 20
       }
     }),
-    hover: { 
+    hover: {
       scale: 1.03,
       x: 5,
       transition: { type: "spring", stiffness: 400, damping: 10 }
@@ -79,9 +86,9 @@ export default function Sidebar() {
   // Logo animation
   const logoVariants = {
     initial: { rotate: 0 },
-    animate: { 
-      rotate: [0, 5, -5, 5, 0], 
-      transition: { 
+    animate: {
+      rotate: [0, 5, -5, 5, 0],
+      transition: {
         duration: 0.5,
         ease: "easeInOut",
         times: [0, 0.2, 0.5, 0.8, 1]
@@ -92,7 +99,7 @@ export default function Sidebar() {
   return (
     <aside className="flex flex-col h-full bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-200 border-r border-slate-200 dark:border-slate-700 transition-colors duration-200">
       <div className="h-16 flex items-center justify-between px-4 border-b border-slate-200 dark:border-slate-700">
-        <motion.div 
+        <motion.div
           className="flex items-center space-x-2"
           variants={logoVariants}
           initial="initial"
@@ -101,8 +108,8 @@ export default function Sidebar() {
           <span className="text-2xl">🤖</span>
           <span className="text-xl font-semibold tracking-wide bg-gradient-to-r from-emerald-500 to-blue-500 text-transparent bg-clip-text">AI Chat Hub</span>
         </motion.div>
-        
-        <motion.button 
+
+        <motion.button
           onClick={toggleDarkMode}
           className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
           aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
@@ -114,14 +121,15 @@ export default function Sidebar() {
       </div>
 
       <div className="px-4 py-6">
-        <h2 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">AI Assistants</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">AI Assistants</h2>
+        </div>
         <ul className="space-y-3">
           {channels.map((channel, i) => {
-            // Get classes for this channel
             const classes = getChannelClasses(channel, channel.isActive);
-            
+
             return (
-              <motion.li 
+              <motion.li
                 key={channel.id}
                 custom={i}
                 variants={itemVariants}
@@ -130,26 +138,42 @@ export default function Sidebar() {
                 whileHover="hover"
                 whileTap="tap"
               >
-                <button
-                  onClick={() => setCurrentChannel(channel.id)}
-                  className={`w-full flex items-center px-3 py-3 rounded-lg transition-all duration-300 ${classes.button}`}
-                >
-                  <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${classes.icon} mr-3`}>
-                    <span className="text-2xl">{channel.iconEmoji}</span>
-                  </div>
-                  <div className="text-left">
-                    <div className="font-medium">{channel.name}</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">{channel.description}</div>
-                  </div>
-                </button>
+                <div className="flex items-center">
+                  <button
+                    onClick={() => setCurrentChannel(channel.id)}
+                    className={`flex-1 flex items-center px-3 py-3 rounded-lg transition-all duration-300 ${classes.button}`}
+                  >
+                    <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${classes.icon} mr-3`}>
+                      <span className="text-2xl">{channel.iconEmoji}</span>
+                    </div>
+                    <div className="text-left flex-1">
+                      <div className="font-medium">{channel.name}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">{channel.description}</div>
+                    </div>
+                  </button>
+
+                  <motion.button
+                    onClick={() => {
+                      setCurrentChannel(channel.id);
+                      createNewChat();
+                    }}
+                    className="ml-2 p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    aria-label="Create new chat"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </motion.button>
+                </div>
               </motion.li>
             );
           })}
         </ul>
       </div>
-
       <div className="mt-auto p-4 border-t border-slate-200 dark:border-slate-700">
-        <motion.div 
+        <motion.div
           className="p-3 rounded-lg bg-slate-100 dark:bg-slate-700/50"
           whileHover={{ scale: 1.02 }}
           transition={{ type: "spring", stiffness: 400, damping: 10 }}

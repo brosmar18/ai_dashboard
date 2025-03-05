@@ -4,13 +4,15 @@ import { useChatContext, AIChannel } from '../context/ChatContext'; // Import AI
 import { motion } from 'framer-motion';
 
 export default function ChatHeader() {
-  const { 
-    currentChannel, 
-    currentChat, 
-    toggleMobileSidebar, 
-    toggleChatList 
+  const {
+    currentChannel,
+    currentChat,
+    toggleMobileSidebar,
+    toggleChatList,
+    createNewChat
   } = useChatContext();
-  
+
+
   // Add helper function to handle color classes with proper types
   const getColorClasses = (channel: AIChannel): string => {
     const colorMap: Record<string, string> = {
@@ -18,17 +20,17 @@ export default function ChatHeader() {
       'blue': 'bg-blue-100 dark:bg-blue-800/40 text-blue-600 dark:text-blue-400',
       'purple': 'bg-purple-100 dark:bg-purple-800/40 text-purple-600 dark:text-purple-400'
     };
-    
+
     // Safely access the color with fallback to 'emerald'
     const colorKey = channel.color as keyof typeof colorMap;
     return colorMap[colorKey] || colorMap['emerald'];
   };
-  
+
   if (!currentChat) {
     return (
       <div className="border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 flex items-center justify-between transition-colors duration-200">
         <div className="flex items-center">
-          <motion.button 
+          <motion.button
             onClick={toggleMobileSidebar}
             className="md:hidden mr-3 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400"
             aria-label="Toggle sidebar"
@@ -39,7 +41,7 @@ export default function ChatHeader() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </motion.button>
-          
+
           <motion.button
             onClick={toggleChatList}
             className="flex items-center mr-2 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400"
@@ -50,17 +52,35 @@ export default function ChatHeader() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </motion.button>
-          
-          <h1 className="text-lg font-medium text-slate-900 dark:text-white">Select or create a new chat</h1>
+
+          <div className="flex items-center">
+            <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${getColorClasses(currentChannel)} mr-2`}>
+              <span className="text-xl">{currentChannel.iconEmoji}</span>
+            </div>
+            <h1 className="text-lg font-medium text-slate-900 dark:text-white">
+              {currentChannel.name}
+            </h1>
+          </div>
         </div>
+
+        <motion.button
+          onClick={createNewChat}
+          className="flex items-center px-3 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          New Chat
+        </motion.button>
       </div>
     );
   }
-
   return (
     <div className="border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 flex items-center justify-between transition-colors duration-200">
       <div className="flex items-center">
-        <motion.button 
+        <motion.button
           onClick={toggleMobileSidebar}
           className="md:hidden mr-3 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400"
           aria-label="Toggle sidebar"
@@ -71,7 +91,7 @@ export default function ChatHeader() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </motion.button>
-        
+
         <motion.button
           onClick={toggleChatList}
           className="hidden sm:flex sm:items-center mr-2 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400"
@@ -82,10 +102,10 @@ export default function ChatHeader() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </motion.button>
-        
+
         <div>
           <div className="flex items-center">
-            <motion.div 
+            <motion.div
               className={`flex items-center justify-center w-8 h-8 rounded-lg ${getColorClasses(currentChannel)} mr-2`}
               whileHover={{ rotate: [0, -5, 5, -5, 0] }}
               transition={{ duration: 0.5 }}
@@ -102,9 +122,9 @@ export default function ChatHeader() {
           <p className="text-sm text-slate-500 dark:text-slate-400">{currentChannel.description}</p>
         </div>
       </div>
-      
+
       <div className="flex items-center space-x-2">
-        <motion.button 
+        <motion.button
           className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
