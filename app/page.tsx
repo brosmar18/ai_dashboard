@@ -159,7 +159,6 @@ export default function DashboardPage() {
               <p className="text-slate-600 dark:text-slate-300 mb-6">
                 Choose an AI assistant from the sidebar and click the "+" button next to it to start a new chat. Each assistant is specialized to help with different tasks.
               </p>
-              {/* "Create New Chat" button removed */}
             </motion.div>
           </div>
         )}

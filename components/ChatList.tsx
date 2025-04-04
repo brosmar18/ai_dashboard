@@ -40,8 +40,6 @@ export default function ChatList() {
         </div>
         
         <div className="flex items-center space-x-1">
-          {/* "New Chat" button removed */}
-          
           <motion.button 
             onClick={toggleChatList}
             className="md:hidden p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
@@ -69,7 +67,6 @@ export default function ChatList() {
               <p className="text-center text-slate-600 dark:text-slate-400">
                 No chats yet. Use the "+" button next to the channel in the sidebar to create a new chat.
               </p>
-              {/* "New Chat" button removed */}
             </motion.div>
           ) : (
             <ul className="space-y-1">
