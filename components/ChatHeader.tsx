@@ -60,12 +60,10 @@ export default function ChatHeader() {
             </h1>
           </div>
         </div>
-        {/* "New Chat" button removed */}
       </div>
     );
   }
   
-  // Rest of the component remains unchanged
   return (
     <div className="border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 flex items-center justify-between transition-colors duration-200">
       <div className="flex items-center">
