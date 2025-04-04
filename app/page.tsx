@@ -154,20 +154,12 @@ export default function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <div className="text-6xl mb-6">✨</div>
-              <h2 className="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-4">Start a New Chat</h2>
+              <div className="text-6xl mb-6">👈</div>
+              <h2 className="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-4">Select a Channel</h2>
               <p className="text-slate-600 dark:text-slate-300 mb-6">
-                Create a new chat to start interacting with our AI assistants. Each assistant is specialized to help with different tasks.
+                Choose an AI assistant from the sidebar and click the "+" button next to it to start a new chat. Each assistant is specialized to help with different tasks.
               </p>
-              <button 
-                onClick={() => {
-                  const context = useChatContext();
-                  context.createNewChat();
-                }}
-                className="px-4 py-2 bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white rounded-md shadow-md hover:shadow-lg transition-all duration-300"
-              >
-                Create New Chat
-              </button>
+              {/* "Create New Chat" button removed */}
             </motion.div>
           </div>
         )}

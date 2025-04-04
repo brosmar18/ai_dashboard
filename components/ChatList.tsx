@@ -8,7 +8,6 @@ export default function ChatList() {
     currentChannel, 
     currentChat, 
     setCurrentChat, 
-    createNewChat, 
     deleteChat,
     toggleChatList 
   } = useChatContext();
@@ -41,17 +40,7 @@ export default function ChatList() {
         </div>
         
         <div className="flex items-center space-x-1">
-          <motion.button 
-            onClick={createNewChat}
-            className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
-            aria-label="Create new chat"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-          </motion.button>
+          {/* "New Chat" button removed */}
           
           <motion.button 
             onClick={toggleChatList}
@@ -78,16 +67,9 @@ export default function ChatList() {
             >
               <div className="text-4xl mb-3">💬</div>
               <p className="text-center text-slate-600 dark:text-slate-400">
-                No chats yet. Create a new chat to get started.
+                No chats yet. Use the "+" button next to the channel in the sidebar to create a new chat.
               </p>
-              <motion.button
-                onClick={createNewChat}
-                className="mt-4 px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-600 transition-colors"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                New Chat
-              </motion.button>
+              {/* "New Chat" button removed */}
             </motion.div>
           ) : (
             <ul className="space-y-1">
