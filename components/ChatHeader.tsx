@@ -1,6 +1,6 @@
 'use client';
 
-import { useChatContext, AIChannel } from '../context/ChatContext'; // Import AIChannel type
+import { useChatContext, AIChannel } from '../context/ChatContext'; 
 import { motion } from 'framer-motion';
 
 export default function ChatHeader() {
@@ -8,10 +8,8 @@ export default function ChatHeader() {
     currentChannel,
     currentChat,
     toggleMobileSidebar,
-    toggleChatList,
-    createNewChat
+    toggleChatList
   } = useChatContext();
-
 
   // Add helper function to handle color classes with proper types
   const getColorClasses = (channel: AIChannel): string => {
@@ -62,21 +60,12 @@ export default function ChatHeader() {
             </h1>
           </div>
         </div>
-
-        <motion.button
-          onClick={createNewChat}
-          className="flex items-center px-3 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          New Chat
-        </motion.button>
+        {/* "New Chat" button removed */}
       </div>
     );
   }
+  
+  // Rest of the component remains unchanged
   return (
     <div className="border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 flex items-center justify-between transition-colors duration-200">
       <div className="flex items-center">
